@@ -1,19 +1,14 @@
-import { useEffect, useState } from "react";
+import { Suspense, lazy, useCallback, useEffect, useState } from "react";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
 import "./App.css";
-import MyComponent from "./components/MyComponent";
-import Contact from "./components/Contact";
+const MyComponent = lazy(() => import("./components/MyComponent"));
+const Contact = lazy(() => import("./components/Contact"));
 
 function App() {
   const [count, setCount] = useState(0);
-  const [activeTab, setActiveTab] = useState("home");
-
-  useEffect(() => {
-    setTimeout(()=>setCount(count+1),1000)
-  }, [])
-  
-
+  // We have used the usecallback function to memomize the parent function because by default react recreate functions if they are not change while re render so to avoid this we use usecallback with memo
+  const increaseCounter = useCallback(() => setCount((prev) => prev + 1), []);
   return (
     <>
       <div>
@@ -25,7 +20,9 @@ function App() {
         </a>
       </div>
       <h1>Vite + React</h1>
-      <Contact />
+      <Suspense fallback={<h1>Loading Contact</h1>}>
+        <Contact increaseCounter={increaseCounter} />
+      </Suspense>
       <div className="card">
         <button onClick={() => setCount((count) => count + 1)}>
           count is {count}
@@ -37,17 +34,10 @@ function App() {
       <p className="read-the-docs">
         Click on the Vite and React logos to learn more
       </p>
-      {activeTab === "home" && (
-        <button onClick={() => setActiveTab("pokemon")}>
-          View Pokemon Too
-        </button>
-      )}
-      {activeTab === "pokemon" && (
-        <>
-          <button onClick={() => setActiveTab("home")}>View Counter Only</button>
-          <MyComponent />
-        </>
-      )}
+
+      <Suspense fallback={<h1>Loading Pokemon</h1>}>
+        <MyComponent />
+      </Suspense>
     </>
   );
 }
